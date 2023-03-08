@@ -1,0 +1,62 @@
+﻿@page "/contacts"
+
+<h3>Contacts</h3>
+
+@{
+    var createContactUrl = "contact/create";
+    <button @onclick="() => navigationManager.NavigateTo(createContactUrl)" class="btn btn-link">Create</button>
+}
+
+@if (contacts == null)
+{
+    <p>Loading...</p>
+}
+else if (!contacts.Any())
+{
+    <p>No records.</p>
+}
+else
+{
+    <table class="table">
+        <thead>
+            <tr>
+                <th scope="col">First</th>
+                <th scope="col">Last</th>
+                <th scope="col"></th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var contact in contacts)
+            {
+                var editContactUrl = $"contact/edit/{contact.Id}";
+                <tr>
+                    <td>@contact.FirstName</td>
+                    <td>@contact.LastName</td>
+                    <td>
+                        <button @onclick="() => navigationManager.NavigateTo(editContactUrl)" class="btn btn-link">Edit</button>
+                        <button @onclick="() => DeleteContact(contact.Id)" class="btn btn-link">Delete</button>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+
+@code {
+    [Inject] NavigationManager navigationManager { get; set; } = default!;
+    [Inject] IContactRepository contactRepository { get; set; } = default!;
+
+    ContactRowDTO[]? contacts;
+
+    protected override async Task OnInitializedAsync() =>
+        await GetContacts();
+
+    private async Task GetContacts() =>
+        contacts = await contactRepository.GetContacts();
+
+    private async Task DeleteContact(int id)
+    {
+        await contactRepository.DeleteContact(id);
+        await GetContacts();
+    }
+}

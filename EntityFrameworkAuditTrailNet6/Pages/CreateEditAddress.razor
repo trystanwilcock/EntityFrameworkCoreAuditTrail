@@ -1,0 +1,81 @@
+﻿@page "/address/create"
+@page "/address/edit/{id:int}"
+
+<h3>CreateEditAddress</h3>
+
+@if (address == null)
+{
+    <p>Loading...</p>
+}
+else
+{
+    <EditForm Model="@address" OnValidSubmit="@HandleValidSubmit">
+        <DataAnnotationsValidator />
+        <ValidationSummary />
+
+        <div class="row mb-3">
+            <div class="col">
+                <label for="AddressLine1" class="form-label">Address Line 1</label>
+                <InputText id="AddressLine1" @bind-Value="address.AddressLine1" class="form-control" />
+            </div>
+        </div>
+
+        <div class="row mb-3">
+            <div class="col">
+                <label for="AddressLine2" class="form-label">Address Line 2</label>
+                <InputText id="AddressLine2" @bind-Value="address.AddressLine2" class="form-control" />
+            </div>
+        </div>
+
+        <div class="row mb-3">
+            <div class="col">
+                <label for="AddressLine3" class="form-label">Address Line 3</label>
+                <InputText id="AddressLine3" @bind-Value="address.AddressLine3" class="form-control" />
+            </div>
+        </div>
+
+        <div class="row mb-3">
+            <div class="col">
+                <label for="City" class="form-label">City</label>
+                <InputText id="City" @bind-Value="address.City" class="form-control" />
+            </div>
+        </div>
+
+        <div class="row mb-3">
+            <div class="col">
+                <label for="County" class="form-label">County</label>
+                <InputText id="County" @bind-Value="address.County" class="form-control" />
+            </div>
+        </div>
+
+        <div class="row mb-3">
+            <div class="col">
+                <label for="Postcode" class="form-label">Postcode</label>
+                <InputText id="Postcode" @bind-Value="address.Postcode" class="form-control" />
+            </div>
+        </div>
+
+        <button type="submit" class="btn btn-primary">Submit</button>
+    </EditForm>
+}
+
+@code {
+    [Parameter] public int Id { get; set; }
+    [Inject] IAddressRepository addressRepository { get; set; } = default!;
+    [Inject] NavigationManager navigationManager { get; set; } = default!;
+
+    CreateEditAddressDTO? address = null;
+
+    protected override async Task OnParametersSetAsync() =>
+        address = await addressRepository.GetCreateEditAddressDTO(Id);
+
+    private async Task HandleValidSubmit()
+    {
+        if (Id == 0)
+            await addressRepository.CreateAddress(address);
+        else
+            await addressRepository.UpdateAddress(address);
+
+        navigationManager.NavigateTo("addresses");
+    }
+}

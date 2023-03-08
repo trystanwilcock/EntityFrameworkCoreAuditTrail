@@ -1,0 +1,64 @@
+﻿@page "/addresses"
+
+<h3>Addresses</h3>
+
+@{
+    var createAddressUrl = "address/create";
+    <button @onclick="() => navigationManager.NavigateTo(createAddressUrl)" class="btn btn-link">Create</button>
+}
+
+@if (addresses == null)
+{
+    <p>Loading...</p>
+}
+else if (!addresses.Any())
+{
+    <p>No records.</p>
+}
+else
+{
+    <table class="table">
+        <thead>
+            <tr>
+                <th scope="col">Address Line 1</th>
+                <th scope="col">City</th>
+                <th scope="col">Postcode</th>
+                <th scope="col"></th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var address in addresses)
+            {
+                var editAddressUrl = $"address/edit/{address.Id}";
+                <tr>
+                    <td>@address.AddressLine1</td>
+                    <td>@address.City</td>
+                    <td>@address.Postcode</td>
+                    <td>
+                        <button @onclick="() => navigationManager.NavigateTo(editAddressUrl)" class="btn btn-link">Edit</button>
+                        <button @onclick="() => DeleteAddress(address.Id)" class="btn btn-link">Delete</button>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+
+@code {
+    [Inject] NavigationManager navigationManager { get; set; } = default!;
+    [Inject] IAddressRepository addressRepository { get; set; } = default!;
+
+    AddressRowDTO[]? addresses;
+
+    protected override async Task OnInitializedAsync() =>
+        await GetAddresss();
+
+    private async Task GetAddresss() =>
+        addresses = await addressRepository.GetAddresses();
+
+    private async Task DeleteAddress(int id)
+    {
+        await addressRepository.DeleteAddress(id);
+        await GetAddresss();
+    }
+}
